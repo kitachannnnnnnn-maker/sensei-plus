@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>席替えシミュレーター</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+    <h1>🏫 席替えシミュレーター</h1>
+
+    <div class="container">
+        <div class="sidebar no-print">
+            <div class="config-item">
+                <label for="gender-pattern">男女の並び方規則:</label>
+                <select id="gender-pattern" onchange="saveAndGenerate()">
+                    <option value="column">縦列で分ける（男子の列・女子の列）</option>
+                    <option value="checker">市松模様（交互に並べる）</option>
+                    <option value="none">男女の縛りなし（完全ランダム）</option>
+                </select>
+            </div>
+            <div class="config-item">
+                <label>空席の設定方法:</label><br>
+                <span
+                    style="color:#666; font-size:11px;">※基本は後ろに自動配置されますが、特定の場所を空席にしたい場合は下のボタンを押して座席を直接クリックしてください。</span><br>
+                <button type="button" id="empty-mode-btn" class="mode-btn" onclick="toggleEmptyMode()">🖱️
+                    座席クリックで空席を指定するモード</button>
+            </div>
+
+            <h3>1. 児童情報の入力</h3>
+            <table id="student-table">
+                <thead>
+                    <tr>
+                        <th style="width:30px;">番</th>
+                        <th>名前</th>
+                        <th>性別</th>
+                        <th>視力</th>
+                        <th>前方</th>
+                        <th>リーダー</th>
+                        <th>離したい子</th>
+                        <th>座席固定</th>
+                        <th style="width:25px;">削</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+            <button class="btn-add" onclick="addStudentRow()">➕ 児童を追加</button>
+            <button class="btn-clear" onclick="clearAllData()">⚠️ 全データを初期化</button>
+
+            <div class="btn-group">
+                <button class="btn-shuffle" onclick="saveAndGenerate()">席替えを実行！</button>
+                <button class="btn-print" onclick="window.print()">🖨️ 印刷する</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="teacher-desk">教 壇</div>
+            <div class="seating-grid" id="seating-chart">
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>

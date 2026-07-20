@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>スライド作成ツール</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>🎨 スライド作成ツール</h1>
+            <p>授業用スライドを簡単作成</p>
+        </header>
+
+        <main>
+            <!-- スライド編集エリア -->
+            <div class="editor-area">
+                <div class="slide-editor">
+                    <div class="slide-preview" id="slide-preview">
+                        <h1 id="slide-title">スライドタイトル</h1>
+                        <p id="slide-content">スライドの内容</p>
+                    </div>
+                </div>
+
+                <!-- 編集パネル -->
+                <div class="edit-panel">
+                    <div class="form-group">
+                        <label for="title">タイトル</label>
+                        <input type="text" id="title" value="スライドタイトル" oninput="updateSlide()">
+                    </div>
+                    <div class="form-group">
+                        <label for="content">内容</label>
+                        <textarea id="content" oninput="updateSlide()">スライドの内容</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="bg-color">背景色</label>
+                        <input type="color" id="bg-color" value="#3b82f6" oninput="updateSlide()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 操作ボタン -->
+            <div class="controls">
+                <button class="btn btn-primary" onclick="addSlide()">➕ スライド追加</button>
+                <button class="btn" onclick="removeSlide()">🗑️ 削除</button>
+                <button class="btn" onclick="prevSlide()">⬅️ 前へ</button>
+                <span id="slide-counter" class="slide-counter">1 / 1</span>
+                <button class="btn" onclick="nextSlide()">➡️ 次へ</button>
+                <button class="btn" onclick="downloadSlides()">💾 保存</button>
+            </div>
+
+            <!-- スライド一覧 -->
+            <div class="slide-list">
+                <h3>スライド一覧</h3>
+                <div id="slides-thumbnails" class="thumbnails"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

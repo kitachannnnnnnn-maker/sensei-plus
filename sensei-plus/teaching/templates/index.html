@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>授業案テンプレート</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>📋 授業案テンプレート</h1>
+            <p>授業案を効率的に作成</p>
+        </header>
+
+        <main>
+            <!-- 基本情報 -->
+            <section class="form-section">
+                <h2>基本情報</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="subject">教科</label>
+                        <input type="text" id="subject" placeholder="例：国語">
+                    </div>
+                    <div class="form-group">
+                        <label for="grade">学年</label>
+                        <input type="text" id="grade" placeholder="例：5年">
+                    </div>
+                    <div class="form-group">
+                        <label for="class">クラス</label>
+                        <input type="text" id="class" placeholder="例：1組">
+                    </div>
+                    <div class="form-group">
+                        <label for="date">授業日時</label>
+                        <input type="datetime-local" id="date">
+                    </div>
+                </div>
+            </section>
+
+            <!-- 授業概要 -->
+            <section class="form-section">
+                <h2>授業概要</h2>
+                <div class="form-group full-width">
+                    <label for="title">単元・課題</label>
+                    <input type="text" id="title" placeholder="例：漢字の読み書き練習">
+                </div>
+                <div class="form-group full-width">
+                    <label for="objective">学習目標</label>
+                    <textarea id="objective" placeholder="本時で達成したい目標を記入"></textarea>
+                </div>
+            </section>
+
+            <!-- 指導計画 -->
+            <section class="form-section">
+                <h2>指導計画</h2>
+                <div class="form-group full-width">
+                    <label for="introduction">導入（5分程度）</label>
+                    <textarea id="introduction" placeholder="導入の流れを記入"></textarea>
+                </div>
+                <div class="form-group full-width">
+                    <label for="development">展開（30分程度）</label>
+                    <textarea id="development" placeholder="主な学習活動を記入"></textarea>
+                </div>
+                <div class="form-group full-width">
+                    <label for="conclusion">まとめ（5分程度）</label>
+                    <textarea id="conclusion" placeholder="本時の学習内容をまとめる"></textarea>
+                </div>
+            </section>
+
+            <!-- 準備物 -->
+            <section class="form-section">
+                <h2>準備物・教材</h2>
+                <div id="materials-list" class="materials-list"></div>
+                <button class="btn btn-small" onclick="addMaterial()">➕ 追加</button>
+            </section>
+
+            <!-- 評価基準 -->
+            <section class="form-section">
+                <h2>評価基準</h2>
+                <div class="form-group full-width">
+                    <label for="evaluation">評価方法・ポイント</label>
+                    <textarea id="evaluation" placeholder="本時の評価基準を記入"></textarea>
+                </div>
+            </section>
+
+            <!-- ボタン -->
+            <div class="actions">
+                <button class="btn btn-primary" onclick="savePlan()">💾 保存</button>
+                <button class="btn" onclick="downloadPlan()">📥 ダウンロード</button>
+                <button class="btn btn-danger" onclick="clearPlan()">🗑️ リセット</button>
+            </div>
+
+            <!-- テンプレート一覧 -->
+            <section class="form-section">
+                <h2>保存済みプラン</h2>
+                <div id="saved-plans" class="saved-plans"></div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
