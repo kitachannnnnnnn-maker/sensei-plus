@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>漢字学習ゲーム</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- タイトル画面 -->
+    <div class="screen" id="screen-title">
+        <div class="container">
+            <div class="title-screen">
+                <h1>🈯 漢字学習ゲーム</h1>
+                <p>漢字の読み方と書き方を楽しく学ぼう！</p>
+
+                <div class="mode-selection">
+                    <h2>学習モードを選ぶ</h2>
+                    <button class="mode-btn reading" onclick="setMode('reading')">
+                        <span class="mode-label">📖 読み方モード</span>
+                        <span class="mode-desc">漢字の読みを選ぶ</span>
+                    </button>
+                    <button class="mode-btn meaning" onclick="setMode('meaning')">
+                        <span class="mode-label">💡 意味モード</span>
+                        <span class="mode-desc">漢字の意味を選ぶ</span>
+                    </button>
+                </div>
+
+                <div class="ranking-section">
+                    <h2>🏆 ランキング</h2>
+                    <div id="ranking-list" class="ranking-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 設定画面 -->
+    <div class="screen" id="screen-config">
+        <div class="container">
+            <div class="config-screen">
+                <h1>ゲーム設定</h1>
+
+                <div class="config-group">
+                    <label for="player-name">プレイヤー名</label>
+                    <input type="text" id="player-name" placeholder="名前を入力" maxlength="20">
+                </div>
+
+                <div class="config-group">
+                    <label for="question-count">問題数</label>
+                    <select id="question-count">
+                        <option value="5">5問</option>
+                        <option value="10" selected>10問</option>
+                        <option value="15">15問</option>
+                    </select>
+                </div>
+
+                <button class="btn-start" onclick="startGame()">ゲーム開始</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ゲーム画面 -->
+    <div class="screen" id="screen-game">
+        <div class="container">
+            <div class="game-screen">
+                <div class="game-header">
+                    <div class="game-info">
+                        <span class="question-counter">
+                            <span id="current-question">1</span>/<span id="total-questions">10</span>
+                        </span>
+                        <span class="game-score">スコア: <span id="game-score">0</span></span>
+                    </div>
+                </div>
+
+                <div class="game-content">
+                    <div class="question-area">
+                        <h2 id="question-text">問題</h2>
+                    </div>
+
+                    <div class="choices">
+                        <button class="choice-btn" onclick="selectAnswer(0)">
+                            <span id="choice-0">選択肢1</span>
+                        </button>
+                        <button class="choice-btn" onclick="selectAnswer(1)">
+                            <span id="choice-1">選択肢2</span>
+                        </button>
+                        <button class="choice-btn" onclick="selectAnswer(2)">
+                            <span id="choice-2">選択肢3</span>
+                        </button>
+                        <button class="choice-btn" onclick="selectAnswer(3)">
+                            <span id="choice-3">選択肢4</span>
+                        </button>
+                    </div>
+
+                    <div id="feedback" class="feedback"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 結果画面 -->
+    <div class="screen" id="screen-result">
+        <div class="container">
+            <div class="result-screen">
+                <h1>🎉 ゲーム終了</h1>
+
+                <div class="result-stats">
+                    <div class="stat-box">
+                        <span class="stat-label">最終スコア</span>
+                        <span class="stat-value" id="final-score">0</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-label">正解数</span>
+                        <span class="stat-value" id="correct-count">0</span>問
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-label">正解率</span>
+                        <span class="stat-value" id="accuracy">0</span>%
+                    </div>
+                </div>
+
+                <div class="result-message" id="result-message"></div>
+
+                <button class="btn-share" onclick="shareResult()">SNSでシェア →</button>
+                <button class="btn-back" onclick="backToTitle()">タイトルに戻る</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

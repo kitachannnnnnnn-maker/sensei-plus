@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>計算ゲーム - センセイplus</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- ===== メインコンテナ ===== -->
+    <div id="app">
+        <!-- 1. タイトル画面 -->
+        <div id="title-screen" class="screen active">
+            <div class="container">
+                <h1>🧮 計算ゲーム</h1>
+                <p class="subtitle">楽しく計算力を鍛えよう！</p>
+
+                <div class="difficulty-selection">
+                    <h2>難易度を選択</h2>
+                    <div class="difficulty-buttons">
+                        <button class="difficulty-btn easy" data-difficulty="easy">
+                            <span class="level">🟢 かんたん</span>
+                            <span class="desc">1～9の足し算</span>
+                        </button>
+                        <button class="difficulty-btn normal" data-difficulty="normal">
+                            <span class="level">🟡 ふつう</span>
+                            <span class="desc">1～99の四則演算</span>
+                        </button>
+                        <button class="difficulty-btn hard" data-difficulty="hard">
+                            <span class="level">🔴 むずかしい</span>
+                            <span class="desc">1～999の四則演算</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="ranking">
+                    <h3>📊 ハイスコア</h3>
+                    <div id="ranking-list" class="ranking-items">
+                        <p class="no-data">まだスコアがありません</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. ゲーム設定画面 -->
+        <div id="config-screen" class="screen">
+            <div class="container">
+                <button class="back-btn" onclick="backToTitle()">← もどる</button>
+                <h1>ゲーム設定</h1>
+
+                <div class="config-form">
+                    <div class="form-group">
+                        <label for="player-name">お名前を入力：</label>
+                        <input type="text" id="player-name" placeholder="例：太郎" maxlength="10" value="">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="question-count">問題数を選択：</label>
+                        <select id="question-count">
+                            <option value="5">5問</option>
+                            <option value="10" selected>10問</option>
+                            <option value="20">20問</option>
+                            <option value="30">30問</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="time-limit">制限時間：</label>
+                        <select id="time-limit">
+                            <option value="30">30秒 / 問</option>
+                            <option value="20" selected>20秒 / 問</option>
+                            <option value="10">10秒 / 問</option>
+                            <option value="5">5秒 / 問（チャレンジ）</option>
+                        </select>
+                    </div>
+
+                    <button class="start-btn" onclick="startGame()">ゲームスタート！</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. ゲーム画面 -->
+        <div id="game-screen" class="screen">
+            <div class="game-header">
+                <div class="game-info">
+                    <div class="info-item">
+                        <span class="label">問題</span>
+                        <span id="question-number" class="value">1/10</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">スコア</span>
+                        <span id="score-display" class="value">0</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">時間</span>
+                        <span id="time-display" class="value">20</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="game-content">
+                <div class="question-area">
+                    <p id="question-text" class="question">5 + 3 = ?</p>
+                </div>
+
+                <div class="answer-area">
+                    <input type="number" id="answer-input" class="answer-input" placeholder="答えを入力" inputmode="numeric"
+                        autocomplete="off">
+                    <button id="submit-btn" class="submit-btn" onclick="submitAnswer()">こたえる</button>
+                </div>
+
+                <div id="feedback" class="feedback"></div>
+            </div>
+
+            <div class="game-footer">
+                <button class="quit-btn" onclick="quitGame()">やめる</button>
+            </div>
+        </div>
+
+        <!-- 4. 結果画面 -->
+        <div id="result-screen" class="screen">
+            <div class="container">
+                <div class="result-card">
+                    <h1>ゲーム終了！</h1>
+
+                    <div class="result-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">正解数</span>
+                            <span id="result-correct" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">スコア</span>
+                            <span id="result-score" class="stat-value">0点</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">正答率</span>
+                            <span id="result-accuracy" class="stat-value">0%</span>
+                        </div>
+                    </div>
+
+                    <div id="result-message" class="result-message"></div>
+
+                    <div class="result-buttons">
+                        <button class="btn-primary" onclick="backToTitle()">もう1回あそぶ</button>
+                        <button class="btn-secondary" onclick="shareSNS()">結果をシェア</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

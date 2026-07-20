@@ -1,0 +1,307 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary: #06b6d4;
+    --success: #10b981;
+    --danger: #ef4444;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --text: #1e293b;
+    --muted: #64748b;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f8fafc;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* ===== メイン画面 ===== */
+.main-screen {
+    width: 100%;
+}
+
+.container {
+    width: 100%;
+    max-width: 800px;
+    background: var(--card);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    margin: 0 auto;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.header-left h1 {
+    font-size: 36px;
+    color: var(--text);
+    margin-bottom: 5px;
+}
+
+.header-left p {
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.header-right {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-direction: column;
+    text-align: right;
+}
+
+.teacher-info {
+    font-size: 13px;
+    color: var(--muted);
+    padding: 6px 12px;
+    background: #f1f5f9;
+    border-radius: 6px;
+}
+
+.teacher-info span {
+    font-weight: bold;
+    color: var(--primary);
+}
+
+.btn-logout {
+    background: #64748b;
+    padding: 8px 14px;
+    font-size: 13px;
+}
+
+.btn-logout:hover {
+    background: #475569;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+h2 {
+    font-size: 18px;
+    color: var(--text);
+    margin-bottom: 15px;
+}
+
+.input-section {
+    background: var(--bg);
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+    font-size: 14px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.btn {
+    padding: 10px 16px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+}
+
+.btn:hover {
+    background: #0891b2;
+    transform: translateY(-2px);
+}
+
+.btn-danger {
+    background: var(--danger);
+}
+
+.btn-danger:hover {
+    background: #dc2626;
+}
+
+.record-list {
+    background: var(--bg);
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.records-container {
+    display: grid;
+    gap: 12px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.record-card {
+    background: white;
+    padding: 16px;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary);
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+}
+
+.record-card.good {
+    border-left-color: var(--success);
+    background: linear-gradient(to right, rgba(16, 185, 129, 0.05), white);
+}
+
+.record-card.guidance {
+    border-left-color: #f59e0b;
+    background: linear-gradient(to right, rgba(245, 158, 11, 0.05), white);
+}
+
+.record-card.other {
+    border-left-color: var(--muted);
+    background: linear-gradient(to right, rgba(100, 116, 139, 0.05), white);
+}
+
+.record-info {
+    flex: 1;
+}
+
+.record-header {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 8px;
+    align-items: center;
+}
+
+.record-id {
+    font-weight: bold;
+    color: var(--text);
+    background: #e2e8f0;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.record-category {
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.record-category.good {
+    color: var(--success);
+}
+
+.record-category.guidance {
+    color: #f59e0b;
+}
+
+.record-category.other {
+    color: var(--muted);
+}
+
+.record-memo {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+    margin-bottom: 8px;
+}
+
+.record-time {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.record-remove {
+    background: var(--danger);
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.record-remove:hover {
+    background: #dc2626;
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+@media (max-width: 600px) {
+    .login-container {
+        max-width: 90%;
+        padding: 30px 20px;
+    }
+
+    .container {
+        padding: 20px;
+    }
+
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .header-right {
+        flex-direction: row;
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .record-card {
+        flex-direction: column;
+        gap: 10px;
+    }
+}

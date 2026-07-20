@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>しりとりゲーム</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="screen" id="screen-title">
+        <div class="container">
+            <div class="title-screen">
+                <h1>🎮 しりとりゲーム</h1>
+                <p>AIと一緒にしりとりで遊ぼう！</p>
+                <div class="game-info-section">
+                    <h2>ゲームの説明</h2>
+                    <ul>
+                        <li>プレイヤーが単語を入力します</li>
+                        <li>AIが最後の文字から始まる単語を返します</li>
+                        <li>つながり続けたら勝ちです！</li>
+                        <li>3回連続で勝つとゲーム終了</li>
+                    </ul>
+                </div>
+                <button class="btn-start" onclick="startGame()">ゲーム開始</button>
+                <div class="ranking-section">
+                    <h2>🏆 ランキング</h2>
+                    <div id="ranking-list" class="ranking-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="screen" id="screen-config">
+        <div class="container">
+            <div class="config-screen">
+                <h1>ゲーム設定</h1>
+                <div class="config-group">
+                    <label for="player-name">プレイヤー名</label>
+                    <input type="text" id="player-name" placeholder="名前を入力" maxlength="20">
+                </div>
+                <button class="btn-start" onclick="startShiritori()">ゲーム開始</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="screen" id="screen-game">
+        <div class="container">
+            <div class="game-screen">
+                <div class="game-header">
+                    <span class="game-title">しりとり</span>
+                    <span class="game-score">勝数: <span id="game-score">0</span>/3</span>
+                </div>
+                <div class="game-content">
+                    <div class="word-display">
+                        <p>現在の単語</p>
+                        <h2 id="current-word">-</h2>
+                        <p class="next-char">次は「<span id="next-char">ん</span>」で始まる単語</p>
+                    </div>
+
+                    <div class="player-input-area">
+                        <input type="text" id="player-word" placeholder="単語を入力してください"
+                            onkeypress="handleKeyPress(event)">
+                        <button class="btn-submit" onclick="submitWord()">送信</button>
+                    </div>
+
+                    <div class="ai-response">
+                        <p>AIの返答</p>
+                        <h3 id="ai-word">-</h3>
+                    </div>
+
+                    <div id="feedback" class="feedback"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="screen" id="screen-result">
+        <div class="container">
+            <div class="result-screen">
+                <h1 id="result-title">🎉 ゲーム終了</h1>
+                <div class="result-message" id="result-message"></div>
+                <div class="result-stats">
+                    <div class="stat-box">
+                        <span class="stat-label">最終成績</span>
+                        <span class="stat-value" id="final-score">0</span>勝
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-label">合計ポイント</span>
+                        <span class="stat-value" id="total-points">0</span>点
+                    </div>
+                </div>
+                <button class="btn-share" onclick="shareResult()">SNSでシェア →</button>
+                <button class="btn-back" onclick="backToTitle()">タイトルに戻る</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

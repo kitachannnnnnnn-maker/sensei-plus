@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電子黒板 メモシステム</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <!-- スムーズでカクつかないドラッグ＆ドロップを実現する SortableJS を導入 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <!-- 分割したCSSを読み込み -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="p-4 bg-slate-50 min-h-screen" id="app-body">
+
+    <header id="app-header"
+        class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+        <div class="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-start">
+            <h1 class="text-2xl font-bold text-slate-800">メモ</h1>
+            <div class="flex gap-2">
+                <button onclick="changeFontSize(-2)" class="zoom-btn text-slate-700 hover:bg-slate-200">A-</button>
+                <button onclick="changeFontSize(2)" class="zoom-btn text-slate-700 hover:bg-slate-200">A+</button>
+            </div>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto justify-end">
+            <div
+                class="flex items-center gap-1 bg-slate-100 p-2 rounded-xl text-sm sm:text-base w-full sm:w-auto justify-center">
+                <input type="text" id="edit-month"
+                    class="w-8 text-center bg-transparent border-b border-slate-400 font-bold focus:outline-none"
+                    placeholder="7">月
+                <input type="text" id="edit-day"
+                    class="w-8 text-center bg-transparent border-b border-slate-400 font-bold focus:outline-none"
+                    placeholder="13">日
+                (<input type="text" id="edit-week"
+                    class="w-6 text-center bg-transparent border-b border-slate-400 font-bold focus:outline-none"
+                    placeholder="月">)
+                <button onclick="saveDate()"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg ml-1 font-bold text-xs sm:text-sm shadow-sm transition-colors">保存</button>
+            </div>
+            <button id="mode-toggle"
+                class="bg-slate-700 hover:bg-slate-800 text-white px-6 sm:px-8 py-2.5 rounded-xl font-bold text-sm sm:text-base w-full sm:w-auto shadow-sm transition-colors">編集モード</button>
+        </div>
+    </header>
+
+    <main id="board-main" class="relative">
+        <!-- 表示モード -->
+        <div id="view-display" class="board-container bg-white p-4 rounded-3xl shadow-lg border border-slate-100">
+            <!-- 連絡 -->
+            <div class="board-col">
+                <div class="flex items-center gap-1 justify-center w-full">
+                    <h2 class="font-bold board-heading">連</h2>
+                    <!-- ほぼ透明で目立たない極小の「追加」ボタン -->
+                    <button onclick="addItem('notice')"
+                        class="opacity-15 hover:opacity-100 active:opacity-100 text-slate-400 p-1 rounded-full hover:bg-slate-100 transition-all cursor-pointer"
+                        title="連絡を追加">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                d="M12 4v16m8-8H4" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="section-line"></div>
+                <div id="disp-notice" class="vertical-container"></div>
+            </div>
+
+            <!-- 宿題 -->
+            <div class="board-col">
+                <div class="flex items-center gap-1 justify-center w-full">
+                    <h2 class="font-bold board-heading">宿</h2>
+                    <!-- テンプレートメニューを開く「追加」ボタン -->
+                    <button onclick="showAddHomeworkMenu()"
+                        class="opacity-15 hover:opacity-100 active:opacity-100 text-slate-400 p-1 rounded-full hover:bg-slate-100 transition-all cursor-pointer"
+                        title="宿題の追加メニューを開く">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                d="M12 4v16m8-8H4" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="section-line"></div>
+                <div id="disp-homework" class="vertical-container"></div>
+            </div>
+
+            <!-- 持ち物 -->
+            <div class="board-col">
+                <div class="flex items-center gap-1 justify-center w-full">
+                    <h2 class="font-bold board-heading">持</h2>
+                    <!-- ほぼ透明で目立たない極小の「追加」ボタン -->
+                    <button onclick="addItem('items')"
+                        class="opacity-15 hover:opacity-100 active:opacity-100 text-slate-400 p-1 rounded-full hover:bg-slate-100 transition-all cursor-pointer"
+                        title="持ち物を追加">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                d="M12 4v16m8-8H4" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="section-line"></div>
+                <div id="disp-items" class="vertical-container"></div>
+            </div>
+
+            <!-- 時間割 -->
+            <div class="board-col narrow">
+                <div class="flex items-center gap-0.5 justify-center w-full">
+                    <h2 class="font-bold board-heading">時</h2>
+                    <!-- ほぼ透明で目立たない極小の「テンプレート反映」ボタン -->
+                    <button id="quick-template-btn" onclick="applyTemplateToCurrentSchedule()"
+                        class="opacity-15 hover:opacity-100 active:opacity-100 text-slate-400 p-0.5 rounded-full hover:bg-slate-100 transition-all cursor-pointer"
+                        title="時間割テンプレートを適用">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.2M7 10H4V7" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="section-line"></div>
+                <div id="disp-schedule" class="horizontal-container"></div>
+            </div>
+
+            <!-- 日付列：戻すボタンと進むボタンを上下にバランス良く追加 -->
+            <div class="board-col narrow no-border flex flex-col justify-between py-2">
+                <button onclick="decrementDate()"
+                    class="opacity-15 hover:opacity-100 active:opacity-100 text-slate-500 hover:text-slate-800 p-1 rounded-full hover:bg-slate-100 transition-all cursor-pointer text-xs font-bold"
+                    title="1日前にもどる">
+                    ▲
+                </button>
+                <div id="disp-date" class="vertical-text font-bold flex-grow text-center py-2 hover:opacity-70"
+                    onclick="incrementDate()"></div>
+                <button onclick="incrementDate()"
+                    class="opacity-15 hover:opacity-100 active:opacity-100 text-slate-500 hover:text-slate-800 p-1 rounded-full hover:bg-slate-100 transition-all cursor-pointer text-xs font-bold"
+                    title="1日後にすすむ">
+                    ▼
+                </button>
+            </div>
+        </div>
+
+        <!-- スマホ対応・改良型編集モード -->
+        <div id="view-editor" class="hidden w-full max-w-4xl mx-auto bg-white p-4 sm:p-10 rounded-3xl border shadow-xl">
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <h2 class="font-bold text-2xl sm:text-4xl text-slate-800" id="editor-title">項目編集</h2>
+            </div>
+
+            <!-- スマホでも指でスライド・タップしやすい横スクロール付きタブ -->
+            <div
+                class="flex border border-slate-200 bg-slate-50 p-1.5 rounded-2xl mb-6 overflow-x-auto whitespace-nowrap scrollbar-hide">
+                <button onclick="switchEditorTab('schedule')" id="tab-schedule"
+                    class="editor-tab flex-1 py-2.5 px-4 text-center rounded-xl font-bold text-sm bg-white text-blue-600 shadow-sm transition-all">時間割</button>
+                <button onclick="switchEditorTab('homework')" id="tab-homework"
+                    class="editor-tab flex-1 py-2.5 px-4 text-center rounded-xl font-bold text-sm text-slate-600 hover:text-slate-800 transition-all">宿題</button>
+                <button onclick="switchEditorTab('items')" id="tab-items"
+                    class="editor-tab flex-1 py-2.5 px-4 text-center rounded-xl font-bold text-sm text-slate-600 hover:text-slate-800 transition-all">持ち物</button>
+                <button onclick="switchEditorTab('notice')" id="tab-notice"
+                    class="editor-tab flex-1 py-2.5 px-4 text-center rounded-xl font-bold text-sm text-slate-600 hover:text-slate-800 transition-all">連絡</button>
+                <button onclick="switchEditorTab('weekly')" id="tab-weekly"
+                    class="editor-tab flex-1 py-2.5 px-4 text-center rounded-xl font-bold text-sm text-indigo-600 hover:text-indigo-800 transition-all">週間テンプレート</button>
+            </div>
+
+            <!-- 編集エリアコンテンツ -->
+            <div id="editor-content" class="space-y-6">
+
+                <!-- 1. 時間割タブ -->
+                <div id="edit-pane-schedule" class="space-y-4">
+                    <div
+                        class="flex flex-col sm:flex-row justify-between sm:items-center gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                        <div>
+                            <h3 class="font-bold text-lg sm:text-xl text-slate-800">今日の時間割</h3>
+                            <p class="text-xs text-slate-500">今日だけの特別な時間割変更も、ここで調整できます。</p>
+                        </div>
+                        <button onclick="applyTemplateToCurrentSchedule()"
+                            class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 py-2 px-3 rounded-xl border border-indigo-200 font-bold flex items-center justify-center gap-1 shadow-sm transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.2M7 10H4V7" />
+                            </svg>
+                            <span id="editor-template-btn-label">テンプレートを読込</span>
+                        </button>
+                    </div>
+                    <div id="list-schedule">
+                        <div class="list-container flex flex-col gap-3"></div>
+                        <button
+                            class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold shadow-md flex items-center justify-center gap-2 transition-colors"
+                            onclick="addItem('schedule')">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4" />
+                            </svg>
+                            <span>＋ 項目を追加</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2. 宿題タブ -->
+                <div id="edit-pane-homework" class="hidden space-y-4">
+                    <div
+                        class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-100 flex-wrap gap-2">
+                        <div class="w-full sm:w-auto">
+                            <h3 class="font-bold text-lg sm:text-xl text-slate-800">今日の宿題</h3>
+                            <p class="text-xs text-slate-500">テンプレートからすばやくきれいに宿題を設定できます。</p>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5 mt-2 sm:mt-0 w-full sm:w-auto">
+                            <button onclick="openHomeworkModal('ganbari')"
+                                class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 py-2 px-3 rounded-xl border border-indigo-200 font-bold flex items-center gap-1 shadow-sm transition-all">
+                                🔥 がんばり
+                            </button>
+                            <button onclick="openHomeworkModal('ondoku')"
+                                class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 py-2 px-3 rounded-xl border border-indigo-200 font-bold flex items-center gap-1 shadow-sm transition-all">
+                                📖 音読
+                            </button>
+                            <button onclick="openHomeworkModal('sandori')"
+                                class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 py-2 px-3 rounded-xl border border-indigo-200 font-bold flex items-center gap-1 shadow-sm transition-all">
+                                📐 算ド
+                            </button>
+                            <button onclick="openHomeworkModal('kokudori')"
+                                class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 py-2 px-3 rounded-xl border border-indigo-200 font-bold flex items-center gap-1 shadow-sm transition-all">
+                                📝 国ド
+                            </button>
+                        </div>
+                    </div>
+                    <div id="list-homework">
+                        <div class="list-container flex flex-col gap-3"></div>
+                        <button
+                            class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold shadow-md flex items-center justify-center gap-2 transition-colors"
+                            onclick="addItem('homework')">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4" />
+                            </svg>
+                            <span>＋ 普通の項目を追加</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3. 持ち物タブ -->
+                <div id="edit-pane-items" class="hidden space-y-4">
+                    <h3 class="font-bold text-lg sm:text-xl text-slate-800">持ち物</h3>
+                    <div id="list-items">
+                        <div class="list-container flex flex-col gap-3"></div>
+                        <button
+                            class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold shadow-md flex items-center justify-center gap-2 transition-colors"
+                            onclick="addItem('items')">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4" />
+                            </svg>
+                            <span>＋ 項目を追加</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4. 連絡タブ -->
+                <div id="edit-pane-notice" class="hidden space-y-4">
+                    <h3 class="font-bold text-lg sm:text-xl text-slate-800">連絡</h3>
+                    <div id="list-notice">
+                        <div class="list-container flex flex-col gap-3"></div>
+                        <button
+                            class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold shadow-md flex items-center justify-center gap-2 transition-colors"
+                            onclick="addItem('notice')">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4" />
+                            </svg>
+                            <span>＋ 項目を追加</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 5. 一週間テンプレート設定タブ (土日を削除) -->
+                <div id="edit-pane-weekly" class="hidden space-y-4">
+                    <div class="bg-indigo-50 p-4 rounded-2xl border border-indigo-100">
+                        <h3 class="font-bold text-lg text-indigo-900 mb-1">週間時間割テンプレート設定</h3>
+                        <p class="text-xs text-indigo-600">各曜日の標準的な時間割を登録します。登録した内容は「読込」から今日の時間割に一発コピーできます。</p>
+                    </div>
+
+                    <!-- 曜日選択用サブタブ (土日を除外した月〜金の構成) -->
+                    <div class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide border-b border-slate-100">
+                        <button onclick="switchTemplateDay('月')" id="temp-day-月"
+                            class="temp-day-btn flex-1 min-w-[48px] py-2 text-center rounded-xl font-bold text-sm bg-indigo-600 text-white shadow-sm transition-all">月</button>
+                        <button onclick="switchTemplateDay('火')" id="temp-day-火"
+                            class="temp-day-btn flex-1 min-w-[48px] py-2 text-center rounded-xl font-bold text-sm bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">火</button>
+                        <button onclick="switchTemplateDay('水')" id="temp-day-水"
+                            class="temp-day-btn flex-1 min-w-[48px] py-2 text-center rounded-xl font-bold text-sm bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">水</button>
+                        <button onclick="switchTemplateDay('木')" id="temp-day-木"
+                            class="temp-day-btn flex-1 min-w-[48px] py-2 text-center rounded-xl font-bold text-sm bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">木</button>
+                        <button onclick="switchTemplateDay('金')" id="temp-day-金"
+                            class="temp-day-btn flex-1 min-w-[48px] py-2 text-center rounded-xl font-bold text-sm bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">金</button>
+                    </div>
+
+                    <!-- テンプレート内容一覧 -->
+                    <div id="weekly-template-container" class="flex flex-col gap-3 pt-2"></div>
+
+                    <button
+                        class="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-bold shadow-md flex items-center justify-center gap-2 transition-colors"
+                        onclick="addTemplateItemAction()">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span>＋ 時間割枠を追加</span>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- 宿題テンプレート専用の入力モーダル -->
+    <div id="homework-template-modal"
+        class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-200">
+        <div
+            class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-slate-100 transform scale-100 transition-transform duration-200">
+            <div class="flex items-center gap-3 mb-4">
+                <div id="hw-modal-icon-container"
+                    class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                </div>
+                <h3 class="font-bold text-lg text-slate-900" id="hw-modal-title">テンプレート追加</h3>
+            </div>
+
+            <!-- がんばりノート用の入力フォーム -->
+            <div id="hw-form-ganbari" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1.5">がんばりのページ数（例: 1.5, 2 など）</label>
+                    <input type="text" id="ganbari-page"
+                        class="w-full p-2.5 border rounded-xl text-base focus:ring-1 focus:ring-blue-500 outline-none font-bold"
+                        placeholder="1.5">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">学習内容（例: 自学, 漢字など）</label>
+                    <div class="flex flex-wrap gap-1 mb-2">
+                        <button type="button" onclick="setGanbariContent('自学')"
+                            class="text-xs bg-slate-100 hover:bg-slate-200 py-1 px-2.5 rounded-lg font-bold text-slate-600 transition-colors">自学</button>
+                        <button type="button" onclick="setGanbariContent('漢字')"
+                            class="text-xs bg-slate-100 hover:bg-slate-200 py-1 px-2.5 rounded-lg font-bold text-slate-600 transition-colors">漢字</button>
+                        <button type="button" onclick="setGanbariContent('計算')"
+                            class="text-xs bg-slate-100 hover:bg-slate-200 py-1 px-2.5 rounded-lg font-bold text-slate-600 transition-colors">計算</button>
+                    </div>
+                    <input type="text" id="ganbari-content"
+                        class="w-full p-2.5 border rounded-xl text-base focus:ring-1 focus:ring-blue-500 outline-none font-bold"
+                        placeholder="自学">
+                </div>
+            </div>
+
+            <!-- 音読用の入力フォーム -->
+            <div id="hw-form-ondoku" class="hidden space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1.5">教科（例: 国語）</label>
+                    <div class="flex flex-wrap gap-1 mb-2">
+                        <button type="button" onclick="setOndokuSubject('国語')"
+                            class="text-xs bg-slate-100 hover:bg-slate-200 py-1 px-2.5 rounded-lg font-bold text-slate-600 transition-colors">国語</button>
+                        <button type="button" onclick="setOndokuSubject('音読')"
+                            class="text-xs bg-slate-100 hover:bg-slate-200 py-1 px-2.5 rounded-lg font-bold text-slate-600 transition-colors">音読</button>
+                    </div>
+                    <input type="text" id="ondoku-subject"
+                        class="w-full p-2.5 border rounded-xl text-base focus:ring-1 focus:ring-blue-500 outline-none font-bold"
+                        placeholder="国語">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1.5">範囲・ページ（例: 86～87）</label>
+                    <input type="text" id="ondoku-page"
+                        class="w-full p-2.5 border rounded-xl text-base focus:ring-1 focus:ring-blue-500 outline-none font-bold"
+                        placeholder="86～87">
+                </div>
+            </div>
+
+            <!-- 算ド用の入力フォーム -->
+            <div id="hw-form-sandori" class="hidden space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1.5">問題番号・ドリル番号（例: 1⃣）</label>
+                    <div class="flex flex-wrap gap-1 mb-2">
+                        <button type="button" onclick="setSandoriNum('1⃣')"
+                            class="text-xs bg-slate-100 hover:bg-slate-200 py-1 px-2 rounded-lg font-bold text-slate-600 transition-colors">1⃣</button>
+                        <button type="button" onclick="setSandoriNum('2⃣')"
+                            class="text-xs bg-slate-100 hover:bg-slate-200 py-1 px-2 rounded-lg font-bold text-slate-600 transition-colors">2⃣</button>
+                        <button type="button" onclick="setSandoriNum('3⃣')"
+                            class="text-xs bg-slate-100 hover:bg-slate-200 py-1 px-2 rounded-lg font-bold text-slate-600 transition-colors">3⃣</button>
+                        <button type="button" onclick="setSandoriNum('①')"
+                            class="text-xs bg-slate-100 hover:bg-slate-200 py-1 px-2 rounded-lg font-bold text-slate-600 transition-colors">①</button>
+                        <button type="button" onclick="setSandoriNum('②')"
+                            class="text-xs bg-slate-100 hover:bg-slate-200 py-1 px-2 rounded-lg font-bold text-slate-600 transition-colors">②</button>
+                    </div>
+                    <input type="text" id="sandori-num"
+                        class="w-full p-2.5 border rounded-xl text-base focus:ring-1 focus:ring-blue-500 outline-none font-bold"
+                        placeholder="1⃣">
+                </div>
+            </div>
+
+            <!-- 国ド用の入力フォーム -->
+            <div id="hw-form-kokudori" class="hidden space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1.5">問題番号・ドリル番号（例: 1⃣）</label>
+                    <div class="flex flex-wrap gap-1 mb-2">
+                        <button type="button" onclick="setKokudoriNum('1⃣')"
+                            class="text-xs bg-slate-100 hover:bg-slate-200 py-1 px-2 rounded-lg font-bold text-slate-600 transition-colors">1⃣</button>
+                        <button type="button" onclick="setKokudoriNum('2⃣')"
+                            class="text-xs bg-slate-100 hover:bg-slate-200 py-1 px-2 rounded-lg font-bold text-slate-600 transition-colors">2⃣</button>
+                        <button type="button" onclick="setKokudoriNum('3⃣')"
+                            class="text-xs bg-slate-100 hover:bg-slate-200 py-1 px-2 rounded-lg font-bold text-slate-600 transition-colors">3⃣</button>
+                        <button type="button" onclick="setKokudoriNum('①')"
+                            class="text-xs bg-slate-100 hover:bg-slate-200 py-1 px-2 rounded-lg font-bold text-slate-600 transition-colors">①</button>
+                        <button type="button" onclick="setKokudoriNum('②')"
+                            class="text-xs bg-slate-100 hover:bg-slate-200 py-1 px-2 rounded-lg font-bold text-slate-600 transition-colors">②</button>
+                    </div>
+                    <input type="text" id="kokudori-num"
+                        class="w-full p-2.5 border rounded-xl text-base focus:ring-1 focus:ring-blue-500 outline-none font-bold"
+                        placeholder="1⃣">
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button onclick="closeHomeworkModal()"
+                    class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-sm transition-colors">キャンセル</button>
+                <button onclick="submitHomeworkTemplate()"
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm transition-colors shadow-md">登録する</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- タップ用のメニュー選択カスタムモーダル (子ども画面をスッキリ保つため) -->
+    <div id="custom-select-modal"
+        class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-200">
+        <div
+            class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-slate-100 transform scale-100 transition-transform duration-200">
+            <h3 class="font-bold text-lg text-slate-900 mb-4" id="select-modal-title">宿題の追加方法</h3>
+            <div id="select-modal-options" class="flex flex-col gap-2.5">
+                <!-- JSで動的にボタン生成 -->
+            </div>
+            <div class="flex justify-end mt-5">
+                <button onclick="closeSelectModal()"
+                    class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-sm transition-colors">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- スマホでのタップや操作を邪魔しないカスタムダイアログ（alert/confirmの代替） -->
+    <div id="custom-confirm-modal"
+        class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-200">
+        <div
+            class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-slate-100 transform scale-100 transition-transform duration-200">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600"
+                    id="confirm-icon">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <h3 class="font-bold text-lg text-slate-900" id="confirm-title">確認</h3>
+            </div>
+            <p class="text-sm text-slate-600 mb-6 font-medium leading-relaxed" id="confirm-message">処理を実行しますか？</p>
+            <div class="flex justify-end gap-3">
+                <button id="confirm-cancel-btn"
+                    class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-sm transition-colors">キャンセル</button>
+                <button id="confirm-ok-btn"
+                    class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm transition-colors shadow-md shadow-indigo-200">確定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 分割したJavaScriptを読み込み -->
+    <script src="script.js"></script>
+</body>
+
+</html>
+
+</html>
